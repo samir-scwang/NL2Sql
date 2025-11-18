@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
-load_dotenv()   # ❌ 删掉这两行，不再从 .env 读
+load_dotenv()  
 
 def _get_env(name: str, default: Optional[str] = None) -> str:
     """Return environment variable values with a clearer error message."""
