@@ -1,0 +1,73 @@
+Metadata-Version: 2.4
+Name: text2sql
+Version: 0.1.0
+Summary: LangChain agents and utilities for DeepSeek-powered text-to-SQL experiments.
+Requires-Python: >=3.10
+Description-Content-Type: text/plain
+Requires-Dist: langchain>=0.3.0
+Requires-Dist: langchain-openai>=0.2.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: sqlalchemy>=2.0.0
+Requires-Dist: pymysql>=1.1.0
+Requires-Dist: loguru>=0.7.0
+
+Text2SQL Agent
+==============
+
+This project hosts a LangChain 1.0 `create_agent` + DeepSeek powered text-to-SQL agent that enforces
+strict read-only policies, validates SQL, and executes the query through
+SQLAlchemy (PyMySQL) while recording every step with loguru.
+
+Quick Start
+-----------
+1. Create a virtual environment and install the package locally:
+   ```
+   pip install -e .
+   ```
+2. Copy `.env.example` (or edit `.env`) and provide at least:
+   - `DEEPSEEK_API_KEY` (optionally `DEEPSEEK_API_BASE`, `DEEPSEEK_MODEL_NAME`)
+   - Either `DB_URL` or `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+   - Set `SCHEMA_SOURCE=database` (default) to auto-read schema via
+     `INFORMATION_SCHEMA`, or keep `SCHEMA_SOURCE=file` to load JSON.
+   - Optional: `SCHEMA_INCLUDE_TABLES` to whitelist certain tables,
+     `SCHEMA_FILE`, `TEXT2SQL_DEFAULT_LIMIT`, `TEXT2SQL_LOG_PATH`
+3. If you use the JSON path, describe the available objects in `schema.json`
+   (or point `SCHEMA_FILE` elsewhere). Each table entry lists the allowed
+   columns; the LLM prompt and SQL validator both rely on this file.
+4. Launch the agent through LangGraph:
+   ```
+   langgraph dev text2sql
+   ```
+   or import `agent` from `src/agent/text2sql_agent.py` and call
+   `agent.invoke({"question": "..."})`.
+
+Execution Flow
+--------------
+1. Natural language question is routed through a LangChain `create_agent` graph (DeepSeek chat model + schema-aware system prompt) to produce compliant SQL.
+2. The raw SQL is sanitized (code fences removed, semicolons stripped, LIMIT
+   appended when aggregation is absent).
+3. `SQLValidator` ensures the query:
+   - Starts with SELECT/WITH and contains no forbidden keywords.
+   - References only schema-approved tables/columns.
+   - Omits semicolons, multiple statements, or write operations.
+4. The approved SQL is executed via SQLAlchemy on MySQL/PyMySQL, and the rows
+   are returned along with the SQL string.
+5. loguru captures every stage (SQL generation, validation, execution).
+
+Schema Source
+-------------
+Set `SCHEMA_SOURCE=database` (default) to pull live metadata from your MySQL
+instance using the same connection defined by `DB_URL`/`DB_HOST` etc. Optional
+`SCHEMA_INCLUDE_TABLES` (comma-separated) limits the tables exposed to the
+LLM/validator. To keep a static schema snapshot, change `SCHEMA_SOURCE=file`
+and supply `SCHEMA_FILE` (e.g., `schema.json`).
+
+Fallback Behavior
+-----------------
+If the user asks for something that cannot be answered by a read-only query,
+the LLM is instructed to return:
+```
+SELECT '无法通过只读查询语句回答该问题' AS message
+```
+The validator accepts this output and the executor simply returns the message
+as a single-row result.

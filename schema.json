@@ -1,0 +1,59 @@
+{
+  "tables": [
+    {
+      "name": "customers",
+      "description": "Basic customer profile information.",
+      "columns": [
+        {"name": "customer_id", "type": "INT", "description": "Primary key."},
+        {"name": "customer_name", "type": "VARCHAR", "description": "Full name."},
+        {"name": "email", "type": "VARCHAR", "description": "Contact email address."},
+        {"name": "country", "type": "VARCHAR", "description": "Country or region."},
+        {"name": "created_at", "type": "DATETIME", "description": "Registration timestamp."}
+      ]
+    },
+    {
+      "name": "orders",
+      "description": "Orders placed by customers.",
+      "columns": [
+        {"name": "order_id", "type": "INT", "description": "Primary key."},
+        {"name": "customer_id", "type": "INT", "description": "Foreign key to customers."},
+        {"name": "order_date", "type": "DATETIME", "description": "Order placement datetime."},
+        {"name": "status", "type": "VARCHAR", "description": "Order status."},
+        {"name": "total_amount", "type": "DECIMAL", "description": "Total order value."}
+      ]
+    },
+    {
+      "name": "order_items",
+      "description": "Individual order lines and SKUs.",
+      "columns": [
+        {"name": "item_id", "type": "INT", "description": "Primary key."},
+        {"name": "order_id", "type": "INT", "description": "Foreign key to orders."},
+        {"name": "product_id", "type": "INT", "description": "FK to products."},
+        {"name": "quantity", "type": "INT", "description": "Ordered quantity."},
+        {"name": "unit_price", "type": "DECIMAL", "description": "Price per unit at order time."}
+      ]
+    },
+    {
+      "name": "products",
+      "description": "Catalog of sellable products.",
+      "columns": [
+        {"name": "product_id", "type": "INT", "description": "Primary key."},
+        {"name": "product_name", "type": "VARCHAR", "description": "Public product label."},
+        {"name": "category", "type": "VARCHAR", "description": "High level catalog grouping."},
+        {"name": "unit_price", "type": "DECIMAL", "description": "Current list price."},
+        {"name": "inventory_quantity", "type": "INT", "description": "Available stock units."}
+      ]
+    },
+    {
+      "name": "payments",
+      "description": "Payment records linked to orders.",
+      "columns": [
+        {"name": "payment_id", "type": "INT", "description": "Primary key."},
+        {"name": "order_id", "type": "INT", "description": "FK to orders."},
+        {"name": "payment_method", "type": "VARCHAR", "description": "Payment channel / type."},
+        {"name": "paid_amount", "type": "DECIMAL", "description": "Actual paid amount."},
+        {"name": "paid_at", "type": "DATETIME", "description": "Payment completion timestamp."}
+      ]
+    }
+  ]
+}

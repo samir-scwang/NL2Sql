@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "text2sql": "./src/Nl2Sql/agent.py:agent"
+  },
+  "env": ".env"  
+}
