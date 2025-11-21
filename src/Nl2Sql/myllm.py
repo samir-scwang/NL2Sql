@@ -23,4 +23,5 @@ deepseek = ChatOpenAI(
     temperature=temperature,
     timeout=120,
     max_retries=2,
+    streaming=True
 )
